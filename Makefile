@@ -6,7 +6,7 @@ PKG_LICENSE:=Apache-2.0
 
 LUCI_TITLE:=LuCI W1700K Fan Control
 LUCI_PKGNAME:=luci-app-w1700k-fancontrol
-LUCI_DEPENDS:=+luci-base @TARGET_airoha
+LUCI_DEPENDS:=+luci-base
 
 include ../../luci.mk
 
