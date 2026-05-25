@@ -3,18 +3,18 @@
 START=99
 USE_PROCD=1
 
-# Dynamically find NCT7802 fan controller hwmon device
-find_nct7802() {
+# Dynamically find fan controller hwmon device
+find_hwmon() {
 	for hwmon in /sys/class/hwmon/hwmon*; do
-		if [ -f "$hwmon/name" ] && [ "$(cat "$hwmon/name" 2>/dev/null)" = "nct7802" ]; then
+		if [ -f "$hwmon/name" ]; then
 			echo "$hwmon"
 			return
 		fi
 	done
-	echo "/sys/class/hwmon/hwmon5"  # fallback
+	echo "/sys/class/hwmon/hwmon2"  # fallback
 }
 
-HWMON=$(find_nct7802)
+HWMON=$(find_hwmon)
 
 apply_curve() {
 	local preset="$1"

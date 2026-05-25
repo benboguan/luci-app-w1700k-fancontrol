@@ -1,19 +1,19 @@
 #!/bin/sh
 
-# W1700K Fan Control RPC backend for LuCI
+# Fan Control RPC backend for LuCI
 
-# Dynamically find NCT7802 fan controller hwmon device
-find_nct7802() {
+# Dynamically find fan controller hwmon device
+find_hwmon() {
 	for hwmon in /sys/class/hwmon/hwmon*; do
-		if [ -f "$hwmon/name" ] && [ "$(cat "$hwmon/name" 2>/dev/null)" = "nct7802" ]; then
+		if [ -f "$hwmon/name" ]; then
 			echo "$hwmon"
 			return
 		fi
 	done
-	echo "/sys/class/hwmon/hwmon5"  # fallback
+	echo "/sys/class/hwmon/hwmon2"  # fallback
 }
 
-# Dynamically find mt7996 WiFi hwmon devices
+# Dynamically find mt799x WiFi devices
 find_mt7996_hwmon() {
 	local band="$1"  # 0, 1, or 2
 	for hwmon in /sys/class/hwmon/hwmon*; do
@@ -47,7 +47,7 @@ find_phy_hwmon() {
 	echo ""
 }
 
-HWMON=$(find_nct7802)
+HWMON=$(find_hwmon)
 
 read_temp() {
 	local file="$1"
@@ -73,10 +73,10 @@ get_status() {
 	local temp_cpu temp_board temp_phy1 temp_phy2
 	local fan_rpm fan_pwm fan_mode fan_percentage
 
-	# Read CPU temperature from thermal zone (AN7581 SoC die temp)
+	# Read CPU temperature from thermal zone (SoC die temp)
 	temp_cpu=$(read_temp "/sys/class/thermal/thermal_zone0/temp")
 
-	# Read temperatures from NCT7802 fan controller (hwmon5)
+	# Read temperatures from fan controller
 	# temp1 = board local (used by hardware fan curve), temp2 = external (disconnected), temp4 = external
 	temp_board=$(read_temp "${HWMON}/temp1_input")
 
@@ -94,7 +94,7 @@ get_status() {
 	# Calculate percentage (0-255 -> 0-100)
 	fan_percentage=$((fan_pwm * 100 / 255))
 
-	# Get WiFi temperatures from mt7996 hwmon devices (dynamic lookup)
+	# Get WiFi temperatures (dynamic lookup)
 	local wifi_24g=0 wifi_5g=0 wifi_6g=0
 	local wifi_24g_hwmon=$(find_mt7996_hwmon 0)
 	local wifi_5g_hwmon=$(find_mt7996_hwmon 1)
